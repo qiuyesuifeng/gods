@@ -1,53 +1,21 @@
-/*
-Copyright (c) 2015, Emir Pasic
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+// Copyright (c) 2015, Emir Pasic. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 package utils
+
+import "time"
 
 // Comparator will make type assertion (see IntComparator for example),
 // which will panic if a or b are not of the asserted type.
 //
-// Should return:
-//   -1, if a < b
-//    0, if a == b
-//    1, if a > b
+// Should return a number:
+//    negative , if a < b
+//    zero     , if a == b
+//    positive , if a > b
 type Comparator func(a, b interface{}) int
 
-func IntComparator(a, b interface{}) int {
-	aInt := a.(int)
-	bInt := b.(int)
-	switch {
-	case aInt > bInt:
-		return 1
-	case aInt < bInt:
-		return -1
-	default:
-		return 0
-	}
-}
-
+// StringComparator provides a fast comparison on strings
 func StringComparator(a, b interface{}) int {
 	s1 := a.(string)
 	s2 := b.(string)
@@ -69,4 +37,215 @@ func StringComparator(a, b interface{}) int {
 		return 1
 	}
 	return 0
+}
+
+// IntComparator provides a basic comparison on int
+func IntComparator(a, b interface{}) int {
+	aAsserted := a.(int)
+	bAsserted := b.(int)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// Int8Comparator provides a basic comparison on int8
+func Int8Comparator(a, b interface{}) int {
+	aAsserted := a.(int8)
+	bAsserted := b.(int8)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// Int16Comparator provides a basic comparison on int16
+func Int16Comparator(a, b interface{}) int {
+	aAsserted := a.(int16)
+	bAsserted := b.(int16)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// Int32Comparator provides a basic comparison on int32
+func Int32Comparator(a, b interface{}) int {
+	aAsserted := a.(int32)
+	bAsserted := b.(int32)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// Int64Comparator provides a basic comparison on int64
+func Int64Comparator(a, b interface{}) int {
+	aAsserted := a.(int64)
+	bAsserted := b.(int64)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// UIntComparator provides a basic comparison on uint
+func UIntComparator(a, b interface{}) int {
+	aAsserted := a.(uint)
+	bAsserted := b.(uint)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// UInt8Comparator provides a basic comparison on uint8
+func UInt8Comparator(a, b interface{}) int {
+	aAsserted := a.(uint8)
+	bAsserted := b.(uint8)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// UInt16Comparator provides a basic comparison on uint16
+func UInt16Comparator(a, b interface{}) int {
+	aAsserted := a.(uint16)
+	bAsserted := b.(uint16)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// UInt32Comparator provides a basic comparison on uint32
+func UInt32Comparator(a, b interface{}) int {
+	aAsserted := a.(uint32)
+	bAsserted := b.(uint32)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// UInt64Comparator provides a basic comparison on uint64
+func UInt64Comparator(a, b interface{}) int {
+	aAsserted := a.(uint64)
+	bAsserted := b.(uint64)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// Float32Comparator provides a basic comparison on float32
+func Float32Comparator(a, b interface{}) int {
+	aAsserted := a.(float32)
+	bAsserted := b.(float32)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// Float64Comparator provides a basic comparison on float64
+func Float64Comparator(a, b interface{}) int {
+	aAsserted := a.(float64)
+	bAsserted := b.(float64)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// ByteComparator provides a basic comparison on byte
+func ByteComparator(a, b interface{}) int {
+	aAsserted := a.(byte)
+	bAsserted := b.(byte)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// RuneComparator provides a basic comparison on rune
+func RuneComparator(a, b interface{}) int {
+	aAsserted := a.(rune)
+	bAsserted := b.(rune)
+	switch {
+	case aAsserted > bAsserted:
+		return 1
+	case aAsserted < bAsserted:
+		return -1
+	default:
+		return 0
+	}
+}
+
+// TimeComparator provides a basic comparison on time.Time
+func TimeComparator(a, b interface{}) int {
+	aAsserted := a.(time.Time)
+	bAsserted := b.(time.Time)
+
+	switch {
+	case aAsserted.After(bAsserted):
+		return 1
+	case aAsserted.Before(bAsserted):
+		return -1
+	default:
+		return 0
+	}
 }

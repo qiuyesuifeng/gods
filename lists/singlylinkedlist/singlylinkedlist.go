@@ -1,33 +1,12 @@
-/*
-Copyright (c) 2015, Emir Pasic
-All rights reserved.
+// Copyright (c) 2015, Emir Pasic. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-// Implementation of doubly linked list.
+// Package singlylinkedlist implements the singly-linked list.
+//
 // Structure is not thread safe.
-// References: http://en.wikipedia.org/wiki/Linked_list#Singly_linked_list
-
+//
+// Reference: https://en.wikipedia.org/wiki/List_%28abstract_data_type%29
 package singlylinkedlist
 
 import (
@@ -37,10 +16,11 @@ import (
 	"strings"
 )
 
-func assertInterfaceImplementation() {
-	var _ lists.Interface = (*List)(nil)
+func assertListImplementation() {
+	var _ lists.List = (*List)(nil)
 }
 
+// List holds the elements, where each element points to the next element
 type List struct {
 	first *element
 	last  *element
@@ -52,12 +32,12 @@ type element struct {
 	next  *element
 }
 
-// Instantiates a new empty list
+// New instantiates a new empty list
 func New() *List {
 	return &List{}
 }
 
-// Appends a value (one or more) at the end of the list (same as Append())
+// Add appends a value (one or more) at the end of the list (same as Append())
 func (list *List) Add(values ...interface{}) {
 	for _, value := range values {
 		newElement := &element{value: value}
@@ -72,12 +52,12 @@ func (list *List) Add(values ...interface{}) {
 	}
 }
 
-// Appends a value (one or more) at the end of the list (same as Add())
+// Append appends a value (one or more) at the end of the list (same as Add())
 func (list *List) Append(values ...interface{}) {
 	list.Add(values...)
 }
 
-// Prepends a values (or more)
+// Prepend prepends a values (or more)
 func (list *List) Prepend(values ...interface{}) {
 	// in reverse to keep passed order i.e. ["c","d"] -> Prepend(["a","b"]) -> ["a","b","c",d"]
 	for v := len(values) - 1; v >= 0; v-- {
@@ -90,7 +70,7 @@ func (list *List) Prepend(values ...interface{}) {
 	}
 }
 
-// Returns the element at index.
+// Get returns the element at index.
 // Second return parameter is true if index is within bounds of the array and array is not empty, otherwise false.
 func (list *List) Get(index int) (interface{}, bool) {
 
@@ -105,7 +85,7 @@ func (list *List) Get(index int) (interface{}, bool) {
 	return element.value, true
 }
 
-// Removes one or more elements from the list with the supplied indices.
+// Remove removes one or more elements from the list with the supplied indices.
 func (list *List) Remove(index int) {
 
 	if !list.withinRange(index) {
@@ -138,7 +118,7 @@ func (list *List) Remove(index int) {
 	list.size--
 }
 
-// Check if values (one or more) are present in the set.
+// Contains checks if values (one or more) are present in the set.
 // All values have to be present in the set for the method to return true.
 // Performance time complexity of n^2.
 // Returns true if no arguments are passed at all, i.e. set is always super-set of empty set.
@@ -165,7 +145,7 @@ func (list *List) Contains(values ...interface{}) bool {
 	return true
 }
 
-// Returns all elements in the list.
+// Values returns all elements in the list.
 func (list *List) Values() []interface{} {
 	values := make([]interface{}, list.size, list.size)
 	for e, element := 0, list.first; element != nil; e, element = e+1, element.next {
@@ -174,24 +154,24 @@ func (list *List) Values() []interface{} {
 	return values
 }
 
-// Returns true if list does not contain any elements.
+// Empty returns true if list does not contain any elements.
 func (list *List) Empty() bool {
 	return list.size == 0
 }
 
-// Returns number of elements within the list.
+// Size returns number of elements within the list.
 func (list *List) Size() int {
 	return list.size
 }
 
-// Removes all elements from the list.
+// Clear removes all elements from the list.
 func (list *List) Clear() {
 	list.size = 0
 	list.first = nil
 	list.last = nil
 }
 
-// Sorts values (in-place) using timsort.
+// Sort sort values (in-place) using.
 func (list *List) Sort(comparator utils.Comparator) {
 
 	if list.size < 2 {
@@ -207,7 +187,7 @@ func (list *List) Sort(comparator utils.Comparator) {
 
 }
 
-// Swaps values of two elements at the given indices.
+// Swap swaps values of two elements at the given indices.
 func (list *List) Swap(i, j int) {
 	if list.withinRange(i) && list.withinRange(j) && i != j {
 		var element1, element2 *element
@@ -223,6 +203,51 @@ func (list *List) Swap(i, j int) {
 	}
 }
 
+// Insert inserts values at specified index position shifting the value at that position (if any) and any subsequent elements to the right.
+// Does not do anything if position is negative or bigger than list's size
+// Note: position equal to list's size is valid, i.e. append.
+func (list *List) Insert(index int, values ...interface{}) {
+
+	if !list.withinRange(index) {
+		// Append
+		if index == list.size {
+			list.Add(values...)
+		}
+		return
+	}
+
+	list.size += len(values)
+
+	var beforeElement *element
+	foundElement := list.first
+	for e := 0; e != index; e, foundElement = e+1, foundElement.next {
+		beforeElement = foundElement
+	}
+
+	if foundElement == list.first {
+		oldNextElement := list.first
+		for i, value := range values {
+			newElement := &element{value: value}
+			if i == 0 {
+				list.first = newElement
+			} else {
+				beforeElement.next = newElement
+			}
+			beforeElement = newElement
+		}
+		beforeElement.next = oldNextElement
+	} else {
+		oldNextElement := beforeElement.next
+		for _, value := range values {
+			newElement := &element{value: value}
+			beforeElement.next = newElement
+			beforeElement = newElement
+		}
+		beforeElement.next = oldNextElement
+	}
+}
+
+// String returns a string representation of container
 func (list *List) String() string {
 	str := "SinglyLinkedList\n"
 	values := []string{}
@@ -233,7 +258,7 @@ func (list *List) String() string {
 	return str
 }
 
-// Check that the index is withing bounds of the list
+// Check that the index is within bounds of the list
 func (list *List) withinRange(index int) bool {
-	return index >= 0 && index < list.size && list.size != 0
+	return index >= 0 && index < list.size
 }
