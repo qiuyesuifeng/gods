@@ -1,111 +1,147 @@
-/*
-Copyright (c) 2015, Emir Pasic
-All rights reserved.
+// Copyright (c) 2015, Emir Pasic. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-// Implementation of order map backed by red-black tree.
+// Package treemap implements a map backed by red-black tree.
+//
 // Elements are ordered by key in the map.
+//
 // Structure is not thread safe.
-// References: http://en.wikipedia.org/wiki/Associative_array
-
+//
+// Reference: http://en.wikipedia.org/wiki/Associative_array
 package treemap
 
 import (
-	"github.com/emirpasic/gods/maps"
-	rbt "github.com/emirpasic/gods/trees/redblacktree"
-	"github.com/emirpasic/gods/utils"
+	"cmp"
+	"fmt"
+	"strings"
+
+	"github.com/emirpasic/gods/v2/maps"
+	rbt "github.com/emirpasic/gods/v2/trees/redblacktree"
+	"github.com/emirpasic/gods/v2/utils"
 )
 
-func assertInterfaceImplementation() {
-	var _ maps.Interface = (*Map)(nil)
+// Assert Map implementation
+var _ maps.Map[string, int] = (*Map[string, int])(nil)
+
+// Map holds the elements in a red-black tree
+type Map[K comparable, V any] struct {
+	tree *rbt.Tree[K, V]
 }
 
-type Map struct {
-	tree *rbt.Tree
+// New instantiates a tree map with the built-in comparator for K
+func New[K cmp.Ordered, V any]() *Map[K, V] {
+	return &Map[K, V]{tree: rbt.New[K, V]()}
 }
 
-// Instantiates a tree map with the custom comparator.
-func NewWith(comparator utils.Comparator) *Map {
-	return &Map{tree: rbt.NewWith(comparator)}
+// NewWith instantiates a tree map with the custom comparator.
+func NewWith[K comparable, V any](comparator utils.Comparator[K]) *Map[K, V] {
+	return &Map[K, V]{tree: rbt.NewWith[K, V](comparator)}
 }
 
-// Instantiates a tree map with the IntComparator, i.e. keys are of type int.
-func NewWithIntComparator() *Map {
-	return &Map{tree: rbt.NewWithIntComparator()}
-}
-
-// Instantiates a tree map with the StringComparator, i.e. keys are of type string.
-func NewWithStringComparator() *Map {
-	return &Map{tree: rbt.NewWithStringComparator()}
-}
-
-// Inserts key-value pair into the map.
+// Put inserts key-value pair into the map.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (m *Map) Put(key interface{}, value interface{}) {
+func (m *Map[K, V]) Put(key K, value V) {
 	m.tree.Put(key, value)
 }
 
-// Searches the element in the map by key and returns its value or nil if key is not found in tree.
+// Get searches the element in the map by key and returns its value or nil if key is not found in tree.
 // Second return parameter is true if key was found, otherwise false.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (m *Map) Get(key interface{}) (value interface{}, found bool) {
+func (m *Map[K, V]) Get(key K) (value V, found bool) {
 	return m.tree.Get(key)
 }
 
-// Remove the element from the map by key.
+// Remove removes the element from the map by key.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (m *Map) Remove(key interface{}) {
+func (m *Map[K, V]) Remove(key K) {
 	m.tree.Remove(key)
 }
 
-// Returns true if map does not contain any elements
-func (m *Map) Empty() bool {
+// Empty returns true if map does not contain any elements
+func (m *Map[K, V]) Empty() bool {
 	return m.tree.Empty()
 }
 
-// Returns number of elements in the map.
-func (m *Map) Size() int {
+// Size returns number of elements in the map.
+func (m *Map[K, V]) Size() int {
 	return m.tree.Size()
 }
 
-// Returns all keys in-order
-func (m *Map) Keys() []interface{} {
+// Keys returns all keys in-order
+func (m *Map[K, V]) Keys() []K {
 	return m.tree.Keys()
 }
 
-// Returns all values in-order based on the key.
-func (m *Map) Values() []interface{} {
+// Values returns all values in-order based on the key.
+func (m *Map[K, V]) Values() []V {
 	return m.tree.Values()
 }
 
-// Removes all elements from the map.
-func (m *Map) Clear() {
+// Clear removes all elements from the map.
+func (m *Map[K, V]) Clear() {
 	m.tree.Clear()
 }
 
-func (m *Map) String() string {
-	str := "TreeMap\n"
-	str += m.tree.String()
-	return str
+// Min returns the minimum key and its value from the tree map.
+// Returns 0-value, 0-value, false if map is empty.
+func (m *Map[K, V]) Min() (key K, value V, ok bool) {
+	if node := m.tree.Left(); node != nil {
+		return node.Key, node.Value, true
+	}
+	return key, value, false
+}
+
+// Max returns the maximum key and its value from the tree map.
+// Returns 0-value, 0-value, false if map is empty.
+func (m *Map[K, V]) Max() (key K, value V, ok bool) {
+	if node := m.tree.Right(); node != nil {
+		return node.Key, node.Value, true
+	}
+	return key, value, false
+}
+
+// Floor finds the floor key-value pair for the input key.
+// In case that no floor is found, then both returned values will be nil.
+// It's generally enough to check the first value (key) for nil, which determines if floor was found.
+//
+// Floor key is defined as the largest key that is smaller than or equal to the given key.
+// A floor key may not be found, either because the map is empty, or because
+// all keys in the map are larger than the given key.
+//
+// Key should adhere to the comparator's type assertion, otherwise method panics.
+func (m *Map[K, V]) Floor(key K) (foundKey K, foundValue V, ok bool) {
+	node, found := m.tree.Floor(key)
+	if found {
+		return node.Key, node.Value, true
+	}
+	return foundKey, foundValue, false
+}
+
+// Ceiling finds the ceiling key-value pair for the input key.
+// In case that no ceiling is found, then both returned values will be nil.
+// It's generally enough to check the first value (key) for nil, which determines if ceiling was found.
+//
+// Ceiling key is defined as the smallest key that is larger than or equal to the given key.
+// A ceiling key may not be found, either because the map is empty, or because
+// all keys in the map are smaller than the given key.
+//
+// Key should adhere to the comparator's type assertion, otherwise method panics.
+func (m *Map[K, V]) Ceiling(key K) (foundKey K, foundValue V, ok bool) {
+	node, found := m.tree.Ceiling(key)
+	if found {
+		return node.Key, node.Value, true
+	}
+	return foundKey, foundValue, false
+}
+
+// String returns a string representation of container
+func (m *Map[K, V]) String() string {
+	str := "TreeMap\nmap["
+	it := m.Iterator()
+	for it.Next() {
+		str += fmt.Sprintf("%v:%v ", it.Key(), it.Value())
+	}
+	return strings.TrimRight(str, " ") + "]"
+
 }

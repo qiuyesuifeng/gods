@@ -1,33 +1,28 @@
-/*
-Copyright (c) Emir Pasic, All rights reserved.
+// Copyright (c) 2015, Emir Pasic. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 3.0 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library. See the file LICENSE included
-with this distribution for more information.
-*/
-
+// Package sets provides an abstract Set interface.
+//
+// In computer science, a set is an abstract data type that can store certain values and no repeated values. It is a computer implementation of the mathematical concept of a finite set. Unlike most other collection types, rather than retrieving a specific element from a set, one typically tests a value for membership in a set.
+//
+// Reference: https://en.wikipedia.org/wiki/Set_%28abstract_data_type%29
 package sets
 
-import "github.com/emirpasic/gods/containers"
+import (
+	"github.com/emirpasic/gods/v2/containers"
+)
 
-type Interface interface {
-	Add(elements ...interface{})
-	Remove(elements ...interface{})
-	Contains(elements ...interface{}) bool
+// Set interface that all sets implement
+type Set[T comparable] interface {
+	Add(elements ...T)
+	Remove(elements ...T)
+	Contains(elements ...T) bool
 
-	containers.Interface
+	containers.Container[T]
 	// Empty() bool
 	// Size() int
 	// Clear()
 	// Values() []interface{}
+	// String() string
 }

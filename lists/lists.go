@@ -1,39 +1,34 @@
-/*
-Copyright (c) Emir Pasic, All rights reserved.
+// Copyright (c) 2015, Emir Pasic. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 3.0 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library. See the file LICENSE included
-with this distribution for more information.
-*/
-
+// Package lists provides an abstract List interface.
+//
+// In computer science, a list or sequence is an abstract data type that represents an ordered sequence of values, where the same value may occur more than once. An instance of a list is a computer representation of the mathematical concept of a finite sequence; the (potentially) infinite analog of a list is a stream.  Lists are a basic example of containers, as they contain other values. If the same value occurs multiple times, each occurrence is considered a distinct item.
+//
+// Reference: https://en.wikipedia.org/wiki/List_%28abstract_data_type%29
 package lists
 
 import (
-	"github.com/emirpasic/gods/containers"
-	"github.com/emirpasic/gods/utils"
+	"github.com/emirpasic/gods/v2/containers"
+	"github.com/emirpasic/gods/v2/utils"
 )
 
-type Interface interface {
-	Get(index int) (interface{}, bool)
+// List interface that all lists implement
+type List[T comparable] interface {
+	Get(index int) (T, bool)
 	Remove(index int)
-	Add(elements ...interface{})
-	Contains(elements ...interface{}) bool
-	Sort(comparator utils.Comparator)
+	Add(values ...T)
+	Contains(values ...T) bool
+	Sort(comparator utils.Comparator[T])
 	Swap(index1, index2 int)
+	Insert(index int, values ...T)
+	Set(index int, value T)
 
-	containers.Interface
+	containers.Container[T]
 	// Empty() bool
 	// Size() int
 	// Clear()
 	// Values() []interface{}
+	// String() string
 }

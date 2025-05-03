@@ -1,74 +1,58 @@
-/*
-Copyright (c) 2015, Emir Pasic
-All rights reserved.
+// Copyright (c) 2015, Emir Pasic. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-// Implementation of set backed by a hash table.
+// Package hashset implements a set backed by a hash table.
+//
 // Structure is not thread safe.
+//
 // References: http://en.wikipedia.org/wiki/Set_%28abstract_data_type%29
-
 package hashset
 
 import (
 	"fmt"
-	"github.com/emirpasic/gods/sets"
 	"strings"
+
+	"github.com/emirpasic/gods/v2/sets"
 )
 
-func assertInterfaceImplementation() {
-	var _ sets.Interface = (*Set)(nil)
-}
+// Assert Set implementation
+var _ sets.Set[int] = (*Set[int])(nil)
 
-type Set struct {
-	items map[interface{}]struct{}
+// Set holds elements in go's native map
+type Set[T comparable] struct {
+	items map[T]struct{}
 }
 
 var itemExists = struct{}{}
 
-// Instantiates a new empty set
-func New() *Set {
-	return &Set{items: make(map[interface{}]struct{})}
+// New instantiates a new empty set and adds the passed values, if any, to the set
+func New[T comparable](values ...T) *Set[T] {
+	set := &Set[T]{items: make(map[T]struct{})}
+	if len(values) > 0 {
+		set.Add(values...)
+	}
+	return set
 }
 
-// Adds the items (one or more) to the set.
-func (set *Set) Add(items ...interface{}) {
+// Add adds the items (one or more) to the set.
+func (set *Set[T]) Add(items ...T) {
 	for _, item := range items {
 		set.items[item] = itemExists
 	}
 }
 
-// Removes the items (one or more) from the set.
-func (set *Set) Remove(items ...interface{}) {
+// Remove removes the items (one or more) from the set.
+func (set *Set[T]) Remove(items ...T) {
 	for _, item := range items {
 		delete(set.items, item)
 	}
 }
 
-// Check if items (one or more) are present in the set.
+// Contains check if items (one or more) are present in the set.
 // All items have to be present in the set for the method to return true.
 // Returns true if no arguments are passed at all, i.e. set is always superset of empty set.
-func (set *Set) Contains(items ...interface{}) bool {
+func (set *Set[T]) Contains(items ...T) bool {
 	for _, item := range items {
 		if _, contains := set.items[item]; !contains {
 			return false
@@ -77,38 +61,94 @@ func (set *Set) Contains(items ...interface{}) bool {
 	return true
 }
 
-// Returns true if set does not contain any elements.
-func (set *Set) Empty() bool {
+// Empty returns true if set does not contain any elements.
+func (set *Set[T]) Empty() bool {
 	return set.Size() == 0
 }
 
-// Returns number of elements within the set.
-func (set *Set) Size() int {
+// Size returns number of elements within the set.
+func (set *Set[T]) Size() int {
 	return len(set.items)
 }
 
-// Clears all values in the set.
-func (set *Set) Clear() {
-	set.items = make(map[interface{}]struct{})
+// Clear clears all values in the set.
+func (set *Set[T]) Clear() {
+	set.items = make(map[T]struct{})
 }
 
-// Returns all items in the set.
-func (set *Set) Values() []interface{} {
-	values := make([]interface{}, set.Size())
+// Values returns all items in the set.
+func (set *Set[T]) Values() []T {
+	values := make([]T, set.Size())
 	count := 0
-	for item, _ := range set.items {
+	for item := range set.items {
 		values[count] = item
-		count += 1
+		count++
 	}
 	return values
 }
 
-func (set *Set) String() string {
+// String returns a string representation of container
+func (set *Set[T]) String() string {
 	str := "HashSet\n"
 	items := []string{}
-	for k, _ := range set.items {
+	for k := range set.items {
 		items = append(items, fmt.Sprintf("%v", k))
 	}
 	str += strings.Join(items, ", ")
 	return str
+}
+
+// Intersection returns the intersection between two sets.
+// The new set consists of all elements that are both in "set" and "another".
+// Ref: https://en.wikipedia.org/wiki/Intersection_(set_theory)
+func (set *Set[T]) Intersection(another *Set[T]) *Set[T] {
+	result := New[T]()
+
+	// Iterate over smaller set (optimization)
+	if set.Size() <= another.Size() {
+		for item := range set.items {
+			if _, contains := another.items[item]; contains {
+				result.Add(item)
+			}
+		}
+	} else {
+		for item := range another.items {
+			if _, contains := set.items[item]; contains {
+				result.Add(item)
+			}
+		}
+	}
+
+	return result
+}
+
+// Union returns the union of two sets.
+// The new set consists of all elements that are in "set" or "another" (possibly both).
+// Ref: https://en.wikipedia.org/wiki/Union_(set_theory)
+func (set *Set[T]) Union(another *Set[T]) *Set[T] {
+	result := New[T]()
+
+	for item := range set.items {
+		result.Add(item)
+	}
+	for item := range another.items {
+		result.Add(item)
+	}
+
+	return result
+}
+
+// Difference returns the difference between two sets.
+// The new set consists of all elements that are in "set" but not in "another".
+// Ref: https://proofwiki.org/wiki/Definition:Set_Difference
+func (set *Set[T]) Difference(another *Set[T]) *Set[T] {
+	result := New[T]()
+
+	for item := range set.items {
+		if _, contains := another.items[item]; !contains {
+			result.Add(item)
+		}
+	}
+
+	return result
 }
